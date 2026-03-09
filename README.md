@@ -1,126 +1,150 @@
-# ESP32 BLE – SPI – Wi‑Fi MQTT Gateway
 
-## 📌 Project Overview
-This project implements a **two‑node ESP32 IoT gateway architecture** designed for reliable sensor data collection and cloud publishing.
+# ESP32 BLE – SPI – Wi‑Fi / Ethernet MQTT Gateway
 
-The system separates **sensor acquisition & BLE communication** from **network connectivity**, improving modularity, scalability, and reliability.
+## Project Overview
+This project demonstrates a **two‑node ESP32 IoT gateway architecture** designed for reliable sensor data acquisition and cloud communication.
 
----
+The system separates **sensor acquisition and BLE communication** from **network connectivity**, creating a modular architecture where one ESP32 focuses on sensing and local communication while another handles networking and cloud integration.
 
-## 🧩 System Architecture
-
-```
-+-----------------------+        SPI        +------------------------+        MQTT
-|  ESP32_BLE Node       |  <------------>  |  ESP32_WiFi Gateway    |  ----------->  Cloud
-|  (Client + Master)    |                  |  (Slave + Publisher)   |
-|                       |                  |                        |
-| • BLE Central (NimBLE)|                  | • SPI Slave            |
-| • SHT40 Sensor (I2C)  |                  | • Wi‑Fi STA            |
-| • SPI Master          |                  | • MQTT Client          |
-+-----------------------+                  +------------------------+
-```
+This design improves:
+- Modularity
+- System reliability
+- Maintainability
+- Scalability for larger IoT deployments
 
 ---
 
-## 🔁 Data Flow
+## System Architecture
 
-1. **SHT40 sensor** measures temperature and humidity.
-2. ESP32_BLE formats data into a frame:
-   ```
+Sensor Node                        Gateway Node                      
+┌─────────────────────┐            ┌────────────────────────┐
+│     ESP32_BLE       │            │     ESP32_Gateway      │
+│  (Client + Master)  │            │   (Slave + Publisher)  │      MQTT
+│                     │   SPI      │                        │------------->Cloud 
+│ • BLE Central       │ <--------> │ • SPI Slave            │
+│ • SHT40 Sensor      │            │ • WiFi / Ethernet      │
+│ • SPI Master        │            │ • MQTT Client          │
+└─────────────────────┘            └────────────────────────┘
+
+---
+
+## Data Flow
+
+1. The **SHT40 sensor** measures temperature and humidity.
+2. The **ESP32_BLE node** reads the sensor data via I2C.
+3. Sensor values are formatted into a data frame:
+
    |##|T:25.6|H:55.3|**|
-   ```
-3. Frame is sent via **SPI Master → SPI Slave**.
-4. ESP32_WiFi receives SPI data.
-5. Data is published to an **MQTT broker** over Wi‑Fi.
-6. Cloud dashboards or subscribers consume the data.
+
+4. The formatted frame is transmitted via **SPI Master → SPI Slave**.
+5. The **ESP32_Gateway node** receives the SPI data.
+6. The gateway publishes the data to an **MQTT broker** via Wi‑Fi or Ethernet.
+7. Cloud dashboards or IoT platforms subscribe to the MQTT topics and visualize the data.
 
 ---
 
-## 📂 Repository Structure
+## Repository Structure
 
-```
 ESP32-BLE-SPI-MQTT-Gateway/
 │
-├── ESP32_BLE/                # Sensor & BLE node (SPI Master)
-│   ├── ESP32_BLE.ino         # Main application
-│   ├── BLECentralHandler.*   # BLE Central (NimBLE) logic
-│   ├── SHT40Handler.*        # SHT40 sensor driver (I2C)
-│   ├── SPIMasterHandler.*    # SPI Master implementation
+├── ESP32_BLE_Node/                
+│   ├── ESP32_BLE.ino
+│   ├── BLECentralHandler.cpp
+│   ├── BLECentralHandler.h
+│   ├── SHT40Handler.cpp
+│   ├── SHT40Handler.h
+│   ├── SPIMasterHandler.cpp
+│   └── SPIMasterHandler.h
 │
-├── ESP32_WiFi/               # Gateway node (SPI Slave)
-│   ├── ESP32_WiFi.ino        # Main gateway firmware
-│   ├── SPISlaveHandler.*     # SPI Slave handling
-│   ├── WiFiHandler.*         # Wi‑Fi + MQTT management
+├── ESP32_Gateway_Node/            
+│   ├── ESP32_WiFi.ino
+│   ├── SPISlaveHandler.cpp
+│   ├── SPISlaveHandler.h
+│   ├── WiFiHandler.cpp
+│   ├── WiFiHandler.h
+│   ├── EthernetHandler.cpp
+│   ├── EthernetHandler.h
+│   ├── MQTTHandler.cpp
+│   └── MQTTHandler.h
 │
 └── README.md
-```
 
 ---
 
-## 🧠 File‑by‑File Explanation
+## File‑by‑File Description
 
-### ESP32_BLE (Client + SPI Master)
+### ESP32_BLE_Node (Sensor Node)
 
-| File | Purpose |
-|----|----|
-| `ESP32_BLE.ino` | Initializes BLE, SHT40, and SPI Master |
-| `BLECentralHandler.*` | Connects to BLE peripherals and receives notifications |
-| `SHT40Handler.*` | Reads temperature & humidity from SHT40 sensor |
-| `SPIMasterHandler.*` | Sends formatted data to SPI Slave |
+| File | Description |
+|-----|-------------|
+| ESP32_BLE.ino | Main firmware entry point for the BLE node |
+| BLECentralHandler.* | Handles BLE central communication |
+| SHT40Handler.* | Driver for reading temperature and humidity from the SHT40 sensor |
+| SPIMasterHandler.* | Implements SPI Master communication to send sensor data |
 
----
-
-### ESP32_WiFi (Gateway + SPI Slave)
-
-| File | Purpose |
-|----|----|
-| `ESP32_WiFi.ino` | Initializes Wi‑Fi, MQTT, and SPI Slave |
-| `SPISlaveHandler.*` | Receives data from SPI Master |
-| `WiFiHandler.*` | Handles Wi‑Fi connection and MQTT publishing |
+This node is responsible for:
+- Reading sensor data
+- Managing BLE connections
+- Sending formatted data to the gateway via SPI
 
 ---
 
-## ✨ Key Features
+### ESP32_Gateway_Node (Gateway Node)
 
-- Modular firmware design (BLE / SPI / Wi‑Fi isolated)
-- Reliable SPI Master–Slave communication
-- BLE Central using **NimBLE** (low memory footprint)
-- SHT40 high‑precision temperature & humidity sensor
-- MQTT cloud publishing
-- Scalable for multiple BLE nodes
-- Interview‑ready, production‑style structure
+| File | Description |
+|-----|-------------|
+| ESP32_WiFi.ino | Main gateway firmware |
+| SPISlaveHandler.* | Handles SPI slave communication and receives data from sensor node |
+| WiFiHandler.* | Manages Wi‑Fi connection |
+| EthernetHandler.* | Handles Ethernet connectivity |
+| MQTTHandler.* | Publishes sensor data to MQTT broker |
 
----
-
-## 🛠 Technologies Used
-
-- **ESP32**
-- **Embedded C / C++**
-- **BLE (NimBLE)**
-- **SPI (Master–Slave)**
-- **I2C**
-- **Wi‑Fi (STA mode)**
-- **MQTT (PubSubClient)**
-- **SHT40 Sensor**
+This node acts as the **IoT gateway**, responsible for:
+- Receiving SPI data
+- Managing network connectivity
+- Publishing sensor data to MQTT cloud
 
 ---
 
-## 🚀 Use Cases
+## Key Features
 
-- Industrial sensor gateways
-- Smart agriculture monitoring
-- IoT edge‑to‑cloud bridges
-- Distributed sensor networks
-- Embedded firmware architecture demos
-
----
-
-## 👤 Author
-
-**Edagottu Janardhana**  
-Firmware / Embedded Systems Engineer  
+• Modular firmware architecture using handler‑based design  
+• BLE central communication using NimBLE  
+• High‑precision SHT40 temperature and humidity sensing  
+• Reliable SPI Master‑Slave communication between ESP32 nodes  
+• MQTT cloud publishing for IoT integration  
+• Support for both Wi‑Fi and Ethernet connectivity  
+• Scalable architecture suitable for multi‑sensor deployments  
 
 ---
 
-## 📄 License
-This project is provided for educational and development purposes.
+## Technologies Used
+
+- ESP32
+- Embedded C / C++
+- BLE (NimBLE stack)
+- SPI communication
+- I2C communication
+- Wi‑Fi networking
+- Ethernet (W5500)
+- MQTT (PubSubClient library)
+- SHT40 Temperature & Humidity Sensor
+
+---
+
+## Potential Applications
+
+- Industrial IoT sensor gateways
+- Smart agriculture monitoring systems
+- Environmental monitoring networks
+- Edge‑to‑cloud data pipelines
+- Embedded systems architecture demonstrations
+
+---
+
+## Author
+
+Edagottu Janardhana  
+Firmware / Embedded Systems Engineer
+
+---
