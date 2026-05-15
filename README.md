@@ -1,5 +1,5 @@
 
-# ESP32 BLE – SPI – Wi‑Fi / Ethernet MQTT Gateway
+# ESP32 BLE – SPI – Wi‑Fi / Ethernet / LTE MQTT Gateway
 
 ## Project Overview
 This project demonstrates a **two‑node ESP32 IoT gateway architecture** designed for reliable sensor data acquisition and cloud communication.
