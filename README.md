@@ -22,7 +22,7 @@ Sensor Node                        Gateway Node
 │  (Client + Master)  │            │   (Slave + Publisher)  │      MQTT
 │                     │   SPI      │                        │------------->Cloud 
 │ • BLE Central       │ <--------> │ • SPI Slave            │
-│ • SHT40 Sensor      │            │ • WiFi / Ethernet      │
+│ • SHT40 Sensor      │            │ • WiFi / Ethernet / LTE│
 │ • SPI Master        │            │ • MQTT Client          │
 └─────────────────────┘            └────────────────────────┘
 ```
