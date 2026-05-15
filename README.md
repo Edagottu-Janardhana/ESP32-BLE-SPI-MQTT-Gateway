@@ -15,7 +15,7 @@ This design improves:
 ---
 
 ## System Architecture
-
+```text
 Sensor Node                        Gateway Node                      
 ┌─────────────────────┐            ┌────────────────────────┐
 │     ESP32_BLE       │            │     ESP32_Gateway      │
@@ -25,7 +25,7 @@ Sensor Node                        Gateway Node
 │ • SHT40 Sensor      │            │ • WiFi / Ethernet      │
 │ • SPI Master        │            │ • MQTT Client          │
 └─────────────────────┘            └────────────────────────┘
-
+```
 ---
 
 ## Data Flow
@@ -44,7 +44,7 @@ Sensor Node                        Gateway Node
 ---
 
 ## Repository Structure
-
+```text
 ESP32-BLE-SPI-MQTT-Gateway/
 │
 ├── ESP32_BLE_Node/                
@@ -68,7 +68,7 @@ ESP32-BLE-SPI-MQTT-Gateway/
 │   └── MQTTHandler.h
 │
 └── README.md
-
+```
 ---
 
 ## File‑by‑File Description
